@@ -18,9 +18,9 @@ import re
 from bs4 import BeautifulSoup
 
 
-# In[]: totoの開催でループ
+# In[]: totoの開催番号でループ
 df_base=pd.DataFrame()
-lot_number =  np.arange(705,700,-1)
+lot_number =  np.arange(705,703,-1)
 for lotNum in lot_number:
     
     # In[Loop-A]: 一回分のtotoをループ
@@ -39,7 +39,6 @@ for lotNum in lot_number:
     # toto開催のくじの種類を判別　GOAL3は除外
     texts = soup.find_all("img")
     figName = texts[3].get("src")
-    print(figName)
     if (figName == "/blog/datawatch/img/object7.gif"): #GOAL3の画像で判別
         continue
     
@@ -238,43 +237,47 @@ for lotNum in lot_number:
         
         data = []
         name = []
-        data.append(league)
-        data.append(section)
-        data.append(year)
-        data.append(mon)
-        data.append(day)
+        
+        data.append(No)                         #totoの開催番号
+        name.append("LotteryNo")
+        
+        data.append(league)                     #リーグの種類
+        data.append(section)                    #節数
+        data.append(year)                       #年
+        data.append(mon)                        #月
+        data.append(day)                        #日
         name.append("league")
         name.append("section")
         name.append("year")
         name.append("mon")
         name.append("day")
             
-        data.append(home_rank)
-        data.append(home_point)
-        data.append(home_win)
-        data.append(home_draw)
-        data.append(home_lose)
-        data.append(home_win_onHome)
-        data.append(home_draw_onHome)
-        data.append(home_lose_onHome)
-        data.append(home_getScore)
-        data.append(home_AvegetScore)
-        data.append(home_lossScore)
-        data.append(home_AvelossScore)
-        data.append(home_shootNum)
-        data.append(home_shootedNum)
-        data.append(home_getCount_0)
-        data.append(home_getCount_1)
-        data.append(home_getCount_2)
-        data.append(home_getCount_3)
-        data.append(home_lossCount_0)
-        data.append(home_lossCount_1)
-        data.append(home_lossCount_2)
-        data.append(home_lossCount_3)
-        data.append(home_RecentScore)
-        data.append(home_RecentAveScore)
-        data.append(home_RecentLoss)
-        data.append(home_RecentAveLoss)
+        data.append(home_rank)                  #リーグ順位
+        data.append(home_point)                 #勝ち点
+        data.append(home_win)                   #勝ち数
+        data.append(home_draw)                  #引き分け数
+        data.append(home_lose)                  #負け数
+        data.append(home_win_onHome)            #ホームでの勝ち数
+        data.append(home_draw_onHome)           #ホームでの分け数
+        data.append(home_lose_onHome)           #ホームでの負け数
+        data.append(home_getScore)              #得点数
+        data.append(home_AvegetScore)           #平均得点数
+        data.append(home_lossScore)             #失点数
+        data.append(home_AvelossScore)          #平均失点数
+        data.append(home_shootNum)              #シュート数
+        data.append(home_shootedNum)            #被シュート数
+        data.append(home_getCount_0)            #得点が0点の試合数
+        data.append(home_getCount_1)            #得点が1点の試合数
+        data.append(home_getCount_2)            #得点が2点の試合数
+        data.append(home_getCount_3)            #得点が3点の試合数
+        data.append(home_lossCount_0)           #失点が0点の試合数
+        data.append(home_lossCount_1)           #失点が1点の試合数
+        data.append(home_lossCount_2)           #失点が2点の試合数
+        data.append(home_lossCount_3)           #失点が3点の試合数
+        data.append(home_RecentScore)           #直近3試合の得点数
+        data.append(home_RecentAveScore)        #直近3試合の平均得点数
+        data.append(home_RecentLoss)            #直近3試合の失点数
+        data.append(home_RecentAveLoss)         #直近3試合の平均失点数
         
         name.append("home_rank")
         name.append("home_point")
@@ -379,4 +382,8 @@ for lotNum in lot_number:
         
         
 # In[]:
+
+df_base = df_base.reset_index(drop=True)
+df_base.to_csv('TeamInfo.csv')
 print(df_base)
+
