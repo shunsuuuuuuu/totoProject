@@ -20,7 +20,7 @@ from bs4 import BeautifulSoup
 
 # In[]: totoの開催番号でループ
 df_base=pd.DataFrame()
-lot_number =  np.arange(642,115,-1)
+lot_number =  np.arange(569,200,-1)
 for lotNum in lot_number:
     
     # In[Loop-A]: 一回分のtotoをループ
@@ -93,19 +93,34 @@ for lotNum in lot_number:
             continue
         # In[]: texts_away の長さが異なる時があるので、その時を対処
         awayInfo = 8
-        # for t in range(len(texts_away)):
-        #     print(t,texts_away[t])
+        # for t in range(len(texts_home)):
+        #     print(t,texts_home[t])
+            
         if len(texts_away)!=20:
             awayInfo = len(texts_away)-12 #len=18なら6　len⁼17なら5 なので
         
-        if len(texts_home)<=11:
+        if len(texts_home)<11:
             print('⇒ Skip: HTML format is not supported cuz of Wcup or England-league or...etc')
             continue
+        
+        #末尾が数字の場合、通常あるツイッタータイムラインがない場合なので例外処理
+        # s = texts_home[-1].text
+        # if 'Tweets' not in s:
+        #     print(s)
+        #     print("The page not have Twitter Timeline ")
+        #     continue
+
+        s = texts_away[-1].text
+        if 'Tweets' not in s:
+            print("The page not have Twitter Timeline ")
+            continue
+        
+        
         # In[3]: リーグでの戦績を抽出
         # リーグ全体での順位や勝ち点、勝利数などを抽出　例）4位 勝ち点 17　4勝 5分 10敗
         s = texts_home[0].text
         stringList = re.findall(r'\d+', s)
-        print(s,stringList,len(texts_home))
+        # print(s,stringList,len(texts_home))
         home_rank   = int(stringList[0])
         home_point  = int(stringList[1])
         home_win    = int(stringList[2])
@@ -113,9 +128,9 @@ for lotNum in lot_number:
         home_lose   = int(stringList[4])
         
         # 試合戦績がないものは除外する 海外チームの試合が対象
-        # if (home_win+home_draw+home_lose) == 0:
-        #     print('⇒ Skip: Overseas team has no Game-Data')
-        #     continue
+        if (home_win+home_draw+home_lose) == 0:
+            print('⇒ Skip: Overseas team has no Game-Data')
+            continue
         
         s = texts_away[awayInfo].text
         stringList = re.findall(r'\d+', s)
@@ -126,19 +141,18 @@ for lotNum in lot_number:
         away_draw   = int(stringList[3])
         away_lose   = int(stringList[4])
         
-        
         # リーグ(home/away)での戦績を抽出　例）　ホーム成績 1勝 3分 6敗
         s = texts_home[1].text
         stringList = re.findall(r'\d+', s)
         home_win_onHome   = int(stringList[0])
         home_draw_onHome  = int(stringList[1])
-        home_lose_onHome    = int(stringList[2])
+        home_lose_onHome  = int(stringList[2])
         
         s = texts_away[awayInfo].text
         stringList = re.findall(r'\d+', s)
         away_win_onAway   = int(stringList[0])
         away_draw_onAway  = int(stringList[1])
-        away_lose_onAway    = int(stringList[2])
+        away_lose_onAway  = int(stringList[2])
         
         
         # リーグでの総得点と１試合平均得点
@@ -206,6 +220,7 @@ for lotNum in lot_number:
         
         s = texts_away[awayInfo+7].text
         stringList = re.findall(r'\d+', s)
+        # print(s,stringList,len(texts_away))
         away_getCount_0 = int(stringList[1])
         away_getCount_1 = int(stringList[3])
         away_getCount_2 = int(stringList[5])
