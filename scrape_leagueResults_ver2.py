@@ -20,7 +20,7 @@ from bs4 import BeautifulSoup
 
 # In[]: totoの開催番号でループ
 df_base=pd.DataFrame()
-lot_number =  np.arange(705,703,-1)
+lot_number =  np.arange(705,115,-1)
 for lotNum in lot_number:
     
     # In[Loop-A]: 一回分のtotoをループ
@@ -31,15 +31,26 @@ for lotNum in lot_number:
     soup = BeautifulSoup(resp.text)
     
     # totoの開催番号を取得
-    No = (soup.find_all("div", class_="txt_lead1"))
-    No = No[0].text
-    No = int(re.findall(r'\d+', No)[0])
-    print("\nLottery Number: ",No)
+    try:
+        No = (soup.find_all("div", class_="txt_lead1"))
+        No = No[0].text
+        No = int(re.findall(r'\d+', No)[0])
+        print("\nLottery Number: ",No)
+    except IndexError:
+        print("\nGO TO /index.php?id=" +str(lotNum))
+        print('⇒ Skip: Linked to Deleted site')
+        continue
     
-    # toto開催のくじの種類を判別　GOAL3は除外
+    # # toto開催のくじの種類を判別　mini-toto,GOAL3のみは除外
     texts = soup.find_all("img")
     figName = texts[3].get("src")
-    if (figName == "/blog/datawatch/img/object7.gif"): #GOAL3の画像で判別
+    #object6は未確認
+    if (figName == "/blog/datawatch/img/object8.gif")\
+        or (figName == "/blog/datawatch/img/object7.gif")\
+            or (figName == "/blog/datawatch/img/object6.gif")\
+               or (figName == "/blog/datawatch/img/object5.gif")\
+                    or (figName == "/blog/datawatch/img/object4.gif"): #GOAL3の画像で判別
+        print("⇒ Skip: Not a site for toto")
         continue
     
     # 各試合のURLを取得 （45、57は変動の恐れあり）
@@ -71,15 +82,23 @@ for lotNum in lot_number:
         day = sche[4]
         # print(league,section,len(texts_away))
         
+        # 5節以内の試合は考慮しない
+        if int(section) <= 5:
+            print('⇒ Skip: Game-Data is insufficient yet (section < 5)')
+            continue
+        
+        # J1,2,3以外の試合は除外する
+        if (sche[0] != "1") and (sche[0] != "2") and (sche[0] != "3"):
+            print('⇒ Skip: Not the game-Data of J-league')
+            continue
         # In[]: texts_away の長さが異なる時があるので、その時を対処
         awayInfo = 8
         # for t in range(len(texts_away)):
         #     print(t,texts_away[t])
-        if len(texts_away)==18:
-            awayInfo = 6
-
+        if len(texts_away)!=20:
+            awayInfo = len(texts_away)-12 #len=18なら6　len⁼17なら5 なので
+            
         # In[3]: リーグでの戦績を抽出
-    
         # リーグ全体での順位や勝ち点、勝利数などを抽出　例）4位 勝ち点 17　4勝 5分 10敗
         s = texts_home[0].text
         stringList = re.findall(r'\d+', s)
@@ -89,8 +108,14 @@ for lotNum in lot_number:
         home_draw   = int(stringList[3])
         home_lose   = int(stringList[4])
         
+        # 試合戦績がないものは除外する 海外チームの試合が対象
+        if (home_win+home_draw+home_lose) == 0:
+            print('⇒ Skip: Overseas team has no Game-Data')
+            continue
+        
         s = texts_away[awayInfo].text
         stringList = re.findall(r'\d+', s)
+        # print(s,stringList,len(texts_away))
         away_rank   = int(stringList[0])
         away_point  = int(stringList[1])
         away_win    = int(stringList[2])
@@ -374,12 +399,10 @@ for lotNum in lot_number:
         col_res = list(df_data.columns[:-2])
         col_name = list(df_data.columns[-2:])
         df_data = df_data[col_name+col_res]
-        
     
             
         # In[7]: データフレームを合体させる
         df_base = pd.concat([df_base,df_data])
-        
         
 # In[]:
 
