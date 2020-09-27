@@ -20,7 +20,7 @@ from bs4 import BeautifulSoup
 
 # In[]: totoの開催番号でループ
 df_base=pd.DataFrame()
-lot_number =  np.arange(705,115,-1)
+lot_number =  np.arange(642,115,-1)
 for lotNum in lot_number:
     
     # In[Loop-A]: 一回分のtotoをループ
@@ -50,7 +50,7 @@ for lotNum in lot_number:
             or (figName == "/blog/datawatch/img/object6.gif")\
                or (figName == "/blog/datawatch/img/object5.gif")\
                     or (figName == "/blog/datawatch/img/object4.gif"): #GOAL3の画像で判別
-        print("⇒ Skip: Not a site for toto")
+        print("⇒ Skip: Not the site for toto")
         continue
     
     # 各試合のURLを取得 （45、57は変動の恐れあり）
@@ -97,11 +97,15 @@ for lotNum in lot_number:
         #     print(t,texts_away[t])
         if len(texts_away)!=20:
             awayInfo = len(texts_away)-12 #len=18なら6　len⁼17なら5 なので
-            
+        
+        if len(texts_home)<=11:
+            print('⇒ Skip: HTML format is not supported cuz of Wcup or England-league or...etc')
+            continue
         # In[3]: リーグでの戦績を抽出
         # リーグ全体での順位や勝ち点、勝利数などを抽出　例）4位 勝ち点 17　4勝 5分 10敗
         s = texts_home[0].text
         stringList = re.findall(r'\d+', s)
+        print(s,stringList,len(texts_home))
         home_rank   = int(stringList[0])
         home_point  = int(stringList[1])
         home_win    = int(stringList[2])
@@ -109,9 +113,9 @@ for lotNum in lot_number:
         home_lose   = int(stringList[4])
         
         # 試合戦績がないものは除外する 海外チームの試合が対象
-        if (home_win+home_draw+home_lose) == 0:
-            print('⇒ Skip: Overseas team has no Game-Data')
-            continue
+        # if (home_win+home_draw+home_lose) == 0:
+        #     print('⇒ Skip: Overseas team has no Game-Data')
+        #     continue
         
         s = texts_away[awayInfo].text
         stringList = re.findall(r'\d+', s)
