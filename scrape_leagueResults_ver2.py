@@ -103,7 +103,7 @@ for lotNum in lot_number:
             print('⇒ Skip: HTML format is not supported cuz of Wcup or England-league or...etc')
             continue
         
-        #末尾が数字の場合、通常あるツイッタータイムラインがない場合なので例外処理
+        # ツイッタータイムラインがない場合対応できなかったので例外処理はContinue　HomeだけにTeitterがあったりするので例外処理は面倒
         # s = texts_home[-1].text
         # if 'Tweets' not in s:
         #     print(s)
