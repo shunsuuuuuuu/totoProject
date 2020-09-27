@@ -20,7 +20,7 @@ from bs4 import BeautifulSoup
 
 # In[]: totoの開催番号でループ
 df_base=pd.DataFrame()
-lot_number =  np.arange(569,200,-1)
+lot_number =  np.arange(555,200,-1)
 for lotNum in lot_number:
     
     # In[Loop-A]: 一回分のtotoをループ
@@ -70,10 +70,16 @@ for lotNum in lot_number:
         texts_home=(soup.find_all("td", class_="home tR")) #home tR というクラスをすべて取得
         texts_away=(soup.find_all("td", class_="away")) #awayというクラスをすべて取得、リーグ戦績以外にも存在するので、homeとは処理が少し異なる。
         
+        texts_home_twitter=(soup.find_all("td", class_="home")) #Home Twitter のためのString
         # In[]: 試合日程を追加
         sche = (soup.find_all("td", colspan="2"))
-        sche = sche[0].text
-        sche = re.findall(r'\d+', sche)
+        sche_text = sche[0].text
+        sche = re.findall(r'\d+', sche_text)
+        
+        # Jリーグじゃない試合はスキップ
+        if "J" not in sche_text:
+            print('=> Skip: NOT The game of J-league')
+            continue
         
         league = "J" + str(sche[0])
         section = sche[1]
@@ -93,8 +99,8 @@ for lotNum in lot_number:
             continue
         # In[]: texts_away の長さが異なる時があるので、その時を対処
         awayInfo = 8
-        # for t in range(len(texts_home)):
-        #     print(t,texts_home[t])
+        # for t in range(len(texts_home_twitter)):
+        #     print(t,texts_home_twitter[t])
             
         if len(texts_away)!=20:
             awayInfo = len(texts_away)-12 #len=18なら6　len⁼17なら5 なので
@@ -103,17 +109,17 @@ for lotNum in lot_number:
             print('⇒ Skip: HTML format is not supported cuz of Wcup or England-league or...etc')
             continue
         
-        # ツイッタータイムラインがない場合対応できなかったので例外処理はContinue　HomeだけにTeitterがあったりするので例外処理は面倒
-        # s = texts_home[-1].text
+        # ツイッタータイムラインがない場合は例外処理（ホームもアウェイもないときに限る）
+        s_home = texts_home_twitter[-1].text
+        s_away = texts_away[-1].text
+        if ('Tweets' not in s_home) and ('Tweets' not in s_away):
+            print("The page not have Twitter Timeline ")
+            awayInfo = len(texts_away)-11
+
+        # s_away = texts_away[-1].text
         # if 'Tweets' not in s:
-        #     print(s)
         #     print("The page not have Twitter Timeline ")
         #     continue
-
-        s = texts_away[-1].text
-        if 'Tweets' not in s:
-            print("The page not have Twitter Timeline ")
-            continue
         
         
         # In[3]: リーグでの戦績を抽出
