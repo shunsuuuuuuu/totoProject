@@ -20,7 +20,7 @@ from bs4 import BeautifulSoup
 
 # In[]: totoの開催番号でループ
 df_base=pd.DataFrame()
-lot_number =  np.arange(555,200,-1)
+lot_number =  np.arange(706,120,-1)
 for lotNum in lot_number:
     
     # In[Loop-A]: 一回分のtotoをループ
@@ -30,6 +30,15 @@ for lotNum in lot_number:
     resp = requests.get(url)
     soup = BeautifulSoup(resp.text)
     
+    # 投票率の抽出
+    # tdで抽出して、\d+%で絞って、\d+部分を抽出しておく
+    boteRate_list=[]
+    td_list = (soup.find_all("td"))
+    for str_ in td_list:
+        if (('%') in str_.text) and (len(str_.text)<=3): #%がついている文字列を抽出、変なのが混ざるのでlen()<3で絞る
+            boteRate = int(str_.text[:-1]) #%を除去した数値を
+            boteRate_list.append(boteRate) #listに追加
+           
     # totoの開催番号を取得
     try:
         No = (soup.find_all("div", class_="txt_lead1"))
@@ -58,6 +67,7 @@ for lotNum in lot_number:
     for i in np.arange(45,57,1): 
         urls.append(texts[i].get("href"))
     
+    boteIndex = 0
     for url in urls:
         print(url)
         # In[2]:指定したURLからスクレイピングにより文字列を抽出する
@@ -71,6 +81,13 @@ for lotNum in lot_number:
         texts_away=(soup.find_all("td", class_="away")) #awayというクラスをすべて取得、リーグ戦績以外にも存在するので、homeとは処理が少し異なる。
         
         texts_home_twitter=(soup.find_all("td", class_="home")) #Home Twitter のためのString
+        
+        # In[]: 投票率を追加
+        boteIndex += 1
+        boteHome = boteRate_list[boteIndex*3-3]
+        boteDraw = boteRate_list[boteIndex*3-2]
+        boteAway = boteRate_list[boteIndex*3-1]
+        
         # In[]: 試合日程を追加
         sche = (soup.find_all("td", colspan="2"))
         sche_text = sche[0].text
@@ -90,7 +107,7 @@ for lotNum in lot_number:
         
         # 5節以内の試合は考慮しない
         if int(section) <= 5:
-            print('⇒ Skip: Game-Data is insufficient yet (section < 5)')
+            print('⇒ Skip: Game-Data is insufficient (section < 5)')
             continue
         
         # J1,2,3以外の試合は除外する
@@ -126,6 +143,9 @@ for lotNum in lot_number:
         # リーグ全体での順位や勝ち点、勝利数などを抽出　例）4位 勝ち点 17　4勝 5分 10敗
         s = texts_home[0].text
         stringList = re.findall(r'\d+', s)
+        if '位' not in s:
+            print('=> Skip: Rank isnt shown')
+            continue
         # print(s,stringList,len(texts_home))
         home_rank   = int(stringList[0])
         home_point  = int(stringList[1])
@@ -301,7 +321,14 @@ for lotNum in lot_number:
         name.append("year")
         name.append("mon")
         name.append("day")
-            
+        
+        data.append(boteHome)                   #ホームの投票率
+        data.append(boteDraw)                   #引き分けの投票率
+        data.append(boteAway)                   #アウェイの投票率
+        name.append("boteHome")
+        name.append("boteDraw")
+        name.append("boteAway")
+        
         data.append(home_rank)                  #リーグ順位
         data.append(home_point)                 #勝ち点
         data.append(home_win)                   #勝ち数
